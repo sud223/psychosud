@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "578445789302",
+    "project_id": "psychosud-90505",
+    "storage_bucket": "psychosud-90505.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:578445789302:android:225ae5fb9d98450bd1f757",
+        "android_client_info": {
+          "package_name": "com.psychosud"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_MA6nUnN0MR6fjDix4xG4fl42X9_Mlzc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
