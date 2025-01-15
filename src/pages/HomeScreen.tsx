@@ -20,7 +20,7 @@ const windowHeight = Dimensions.get('window').height;
 const feedData = [
   {
     id: 1,
-    name: 'elizabeth',
+    name: 'Sudhanshu Bahuguna',
     user_img:
       'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=600',
     post_img:
@@ -31,7 +31,7 @@ const feedData = [
   },
   {
     id: 2,
-    name: 'Happy',
+    name: 'Sudhanshu Bahuguna',
     user_img:
       'https://images.pexels.com/photos/1559486/pexels-photo-1559486.jpeg?auto=compress&cs=tinysrgb&w=600',
     post_img:
@@ -42,7 +42,7 @@ const feedData = [
   },
   {
     id: 3,
-    name: 'Lily',
+    name: 'Sudhanshu Bahuguna',
     user_img:
       'https://images.pexels.com/photos/678783/pexels-photo-678783.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
     post_img:
@@ -101,14 +101,16 @@ const HomeScreen = () => {
             alignItems: 'flex-start',
           }}>
           <Image
-            source={require('../assets/images/insta.png')}
-            style={{width: '100%', height: '100%', tintColor: '#fff'}}
+            source={require('../assets/images/psycho.png')}
+            style={{width: '100%', height: '100%', 
+              // tintColor: '#fff'
+            }}
             resizeMode="contain"
           />
         </View>
-        <View>
+        {/* <View>
           <Icon name="message-text" size={20} color="#fff" />
-        </View>
+        </View> */}
       </View>
 
       {/* Feed Card start */}

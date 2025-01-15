@@ -37,9 +37,9 @@ const LoginScreen = () => {
             backgroundColor: '#000',
           }}>
           <Image
-            source={require('../assets/images/insta.png')}
+            source={require('../assets/images/psycho.png')}
             style={{width: '60%', height: 100}}
-            tintColor={'#fff'}
+            // tintColor={'#fff'}
             resizeMode="contain"
           />
 
