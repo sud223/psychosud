@@ -1,7 +1,9 @@
-import {useNavigation} from '@react-navigation/native';
-import React, {useState} from 'react';
+import { useNavigation } from '@react-navigation/native';
+import React, { useState } from 'react';
 import {
+  Alert, // Added Alert
   Image,
+  Keyboard, // Added Keyboard
   ScrollView,
   StatusBar,
   Text,
@@ -10,10 +12,41 @@ import {
   View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import useAuthStore from '../store/authStore'; // Added useAuthStore
+
 const LoginScreen = () => {
   const navigation = useNavigation();
+  const login = useAuthStore((state) => state.login); // Get login action
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  // Email validation regex (simple)
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  // Handle Login Logic
+  const handleLogin = () => {
+    Keyboard.dismiss(); // Dismiss keyboard
+
+    // Basic Validation
+    if (!email || !password) {
+      Alert.alert('Error', 'Please enter both email and password.');
+      return;
+    }
+    if (!emailRegex.test(email)) {
+      Alert.alert('Error', 'Please enter a valid email address.');
+      return;
+    }
+
+    // Simulate API Call & Login
+    console.log('Simulating login for:', email);
+    // In a real app, you would make an API call here
+    // For this simulation, any non-empty email/password is valid
+    const dummyToken = `dummy-auth-token-${email}-${Date.now()}`;
+    login(dummyToken);
+    // Alert.alert('Success', 'Login successful!'); // Optional: remove if navigation is enough
+    // Navigation to 'feed' is handled by App.tsx's reaction to auth state change
+  };
   return (
     <>
       <ScrollView
@@ -95,8 +128,9 @@ const LoginScreen = () => {
                 placeholder="Enter your password"
                 placeholderTextColor="grey"
                 style={{color: '#fff'}}
-                onChangeText={txt => setPassword(txt)}
+                onChangeText={setPassword} // Use setPassword
                 value={password}
+                secureTextEntry // Hide password
               />
             </View>
           </View>

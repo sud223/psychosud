@@ -1,6 +1,7 @@
-import {useFocusEffect, useNavigation} from '@react-navigation/native';
-import React, {useEffect, useState} from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
 import {
+  Alert, // Added Alert
   BackHandler,
   Image,
   Keyboard,
@@ -12,12 +13,17 @@ import {
   View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import useAuthStore from '../store/authStore'; // Added useAuthStore
+
 const SignupScreen = () => {
   const navigation = useNavigation();
+  const login = useAuthStore((state) => state.login); // Get login action
+
+  // Form state
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [username, setUserName] = useState('');
-  const [bio, setBio] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   // back button handle
@@ -33,9 +39,43 @@ const SignupScreen = () => {
         backButtonHandler,
       );
       return () => backHandler.remove();
-    }, []),
+    }, [navigation]), // Added dependency
   );
   //  End back handle
+
+  // Email validation regex (simple)
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  // Handle Signup Logic
+  const handleSignup = () => {
+    Keyboard.dismiss(); // Dismiss keyboard
+
+    // Validation
+    if (!name || !email || !password || !confirmPassword) {
+      Alert.alert('Error', 'Please fill in all fields.');
+      return;
+    }
+    if (!emailRegex.test(email)) {
+      Alert.alert('Error', 'Please enter a valid email address.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match.');
+      return;
+    }
+    if (password.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters long.');
+      return;
+    }
+
+    // Simulate API call and login
+    console.log('Simulating signup for:', { name, email });
+    const dummyToken = `dummy-token-${name}-${Date.now()}`;
+    login(dummyToken);
+    Alert.alert('Success', 'Signup successful!');
+    // Navigation to 'feed' is handled automatically by App.tsx due to auth state change
+  };
+
 
   useEffect(() => {
     // Set up event listeners for keyboard show and hide events
@@ -87,35 +127,16 @@ const SignupScreen = () => {
             resizeMode="contain"
           />
 
-          {/* user Image */}
-          <View style={{marginTop: 20}}>
-            <View
-              style={{
-                width: 130,
-                height: 130,
-                backgroundColor: '#000',
-                borderRadius: 100,
-                overflow: 'hidden',
-              }}>
-              <Image
-                source={{
-                  uri: 'https://img.freepik.com/free-photo/woman-grey-clothes-smiling_23-2147970475.jpg?ga=GA1.1.1955626654.1725950193&semt=ais_hybrid',
-                }}
-                style={{width: '100%', height: '100%'}}
-                resizeMode="cover"
-              />
-            </View>
-          </View>
-
-          {/* username */}
+          {/* Name Input */}
           <View
             style={{
+              flexDirection: 'row',
               flexDirection: 'row',
               alignItems: 'center',
               backgroundColor: '#1A1A1A',
               width: '95%',
               paddingHorizontal: 10,
-              marginTop: 20,
+              marginTop: 30, // Adjusted margin
             }}>
             <View
               style={{

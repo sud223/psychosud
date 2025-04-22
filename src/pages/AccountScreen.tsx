@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import useAuthStore from '../store/authStore'; // Added useAuthStore
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -22,6 +23,8 @@ const AccountScreen = () => {
   ];
 
   const navigation = useNavigation();
+  const logout = useAuthStore((state) => state.logout); // Get logout action
+
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: '#000'}}>
       {/* header */}
@@ -87,7 +90,9 @@ const AccountScreen = () => {
               alignItems: 'center',
               marginTop: 10,
               marginHorizontal: 15,
-            }}>
+            }}
+            onPress={logout} // Added onPress handler
+            >
             <Text style={{color: '#fff', fontSize: 12, fontWeight: '500'}}>
               Sign Out
             </Text>
