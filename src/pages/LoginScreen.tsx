@@ -97,6 +97,7 @@ const LoginScreen = () => {
                 style={{color: '#fff'}}
                 onChangeText={txt => setPassword(txt)}
                 value={password}
+                secureTextEntry
               />
             </View>
           </View>

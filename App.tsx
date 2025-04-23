@@ -77,7 +77,7 @@ const App = () => {
             },
           }}
         />
-        {/* <Tab.Screen
+        <Tab.Screen
           name="upload"
           component={UploadScreen}
           options={{
@@ -100,7 +100,7 @@ const App = () => {
               );
             },
           }}
-        /> */}
+        />
         <Tab.Screen
           name="notification"
           component={NotificationScreen}
@@ -125,7 +125,7 @@ const App = () => {
             },
           }}
         />
-        {/* <Tab.Screen
+        <Tab.Screen
           name="account"
           component={AccountScreen}
           options={{
@@ -148,7 +148,7 @@ const App = () => {
               );
             },
           }}
-        /> */}
+        />
       </Tab.Navigator>
     );
   };

@@ -181,7 +181,7 @@ const SignupScreen = () => {
                 alignItems: 'center',
                 paddingRight: 5,
               }}>
-              <Icon name="lock-outline" size={20} color={'#fff'} />
+              <Icon name="information-outline" size={20} color={'#fff'} />
             </View>
             <View style={{flex: 1}}>
               <TextInput
@@ -190,6 +190,7 @@ const SignupScreen = () => {
                 style={{color: '#fff'}}
                 onChangeText={txt => setPassword(txt)}
                 value={password}
+                secureTextEntry
               />
             </View>
           </View>
