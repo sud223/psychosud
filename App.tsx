@@ -1,5 +1,7 @@
-import React from 'react';
-import {Text, View} from 'react-native';
+import React, {useEffect, useRef} from 'react'; // Import useEffect, useRef
+import {Text, View, AppState} from 'react-native'; // Import AppState
+import firebase from '@react-native-firebase/app'; // Import firebase app
+import firestore from '@react-native-firebase/firestore'; // Import firestore instance
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {NavigationContainer} from '@react-navigation/native';
@@ -13,11 +15,121 @@ import SearchScreen from './src/pages/SearchScreen';
 import AccountScreen from './src/pages/AccountScreen';
 import SplashScreen from './src/pages/SplashScreen';
 import NotificationScreen from './src/pages/NotificationScreen';
+import ChatScreen from './src/pages/ChatScreen'; // Import ChatScreen
+import ChatListScreen from './src/pages/ChatListScreen'; // Import ChatListScreen
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
+// Firebase Config (assuming it's placed here for simplicity, consider a separate config file)
+// Note: Initialization using default files (google-services.json/GoogleService-Info.plist)
+// usually happens automatically. This explicit check is often redundant but can be
+// useful for debugging or specific configurations.
+const firebaseConfig = {
+  // Your web app's Firebase configuration (Optional if using native files)
+  // apiKey: "...",
+  // authDomain: "...",
+  // projectId: "...",
+  // storageBucket: "...",
+  // messagingSenderId: "...",
+  // appId: "..."
+};
+
+// Initialize Firebase
+if (firebase.apps.length === 0) {
+  firebase.initializeApp(firebaseConfig);
+  console.log('Firebase initialized successfully');
+} else {
+  console.log('Firebase already initialized');
+}
+
+
 const App = () => {
+  // Hardcoded user ID for now - replace with actual authenticated user ID
+  const currentUserId = 'currentUserHardcodedId';
+  const appState = useRef(AppState.currentState);
+
+  // Effect for Firebase initialization confirmation (existing)
+  useEffect(() => {
+    console.log('App mounted, Firebase apps:', firebase.apps.length);
+  }, []);
+
+  // Effect for AppState listener and Firestore status updates
+  useEffect(() => {
+    const handleAppStateChange = async (nextAppState: string) => {
+      if (
+        appState.current.match(/inactive|background/) &&
+        nextAppState === 'active'
+      ) {
+        console.log('App has come to the foreground!');
+        // Update Firestore: User is online
+        try {
+          await firestore().collection('users').doc(currentUserId).update({
+            isOnline: true,
+            lastSeen: firestore.FieldValue.serverTimestamp(),
+          });
+          console.log('User status updated to online.');
+        } catch (error) {
+          console.error('Error updating user status to online:', error);
+          // Handle potential errors (e.g., user doc doesn't exist yet)
+          // Maybe create the document if it doesn't exist?
+          // await firestore().collection('users').doc(currentUserId).set({
+          //   isOnline: true,
+          //   lastSeen: firestore.FieldValue.serverTimestamp(),
+          // }, { merge: true });
+        }
+      } else if (
+        appState.current === 'active' &&
+        nextAppState.match(/inactive|background/)
+      ) {
+        console.log('App has gone to the background!');
+        // Update Firestore: User is offline
+        try {
+          await firestore().collection('users').doc(currentUserId).update({
+            isOnline: false,
+            lastSeen: firestore.FieldValue.serverTimestamp(),
+          });
+          console.log('User status updated to offline.');
+        } catch (error) {
+          console.error('Error updating user status to offline:', error);
+        }
+      }
+      appState.current = nextAppState;
+      console.log('AppState:', appState.current);
+    };
+
+    // Add the event listener
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    console.log('AppState listener added.');
+
+    // Initial status update when app starts (set to online)
+    const setInitialStatus = async () => {
+      try {
+        await firestore().collection('users').doc(currentUserId).update({
+          isOnline: true,
+          lastSeen: firestore.FieldValue.serverTimestamp(),
+        });
+         console.log('Initial user status set to online.');
+      } catch (error) {
+         console.error('Error setting initial user status:', error);
+         // Handle potential errors (e.g., user doc doesn't exist)
+         // Consider creating the document here if needed
+      }
+    };
+    setInitialStatus();
+
+
+    // Cleanup function: remove the listener when the component unmounts
+    return () => {
+      console.log('Removing AppState listener.');
+      subscription.remove();
+      // Optional: Set user offline when app is completely closed?
+      // This is tricky because cleanup function might not run reliably on app kill.
+      // Firestore's presence system might be better for true offline detection.
+    };
+  }, [currentUserId]); // Dependency array includes currentUserId
+
+
   const BottomNavigationBar = () => {
     return (
       <Tab.Navigator
@@ -45,6 +157,31 @@ const App = () => {
                   }}>
                   <MaterialCommunityIcons
                     name="home"
+                    color={focused ? '#fff' : 'grey'}
+                    size={20}
+                  />
+                </View>
+              );
+            },
+          }}
+        />
+        {/* Chat List Tab */}
+        <Tab.Screen
+          name="chatTab" // Keep the tab name
+          component={ChatListScreen} // Point tab to ChatListScreen
+          options={{
+            headerShown: false, // Keep header hidden as it's part of the stack now
+            tabBarShowLabel: false,
+            tabBarIcon: ({focused}) => {
+              return (
+                <View
+                  style={{
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: '#000',
+                  }}>
+                  <MaterialCommunityIcons
+                    name="message-text-outline" // Use chat icon
                     color={focused ? '#fff' : 'grey'}
                     size={20}
                   />
@@ -176,6 +313,19 @@ const App = () => {
             name="feed"
             component={BottomNavigationBar}
             options={{headerShown: false}}
+          />
+          {/* Add ChatScreen to the main stack */}
+          <Stack.Screen
+            name="chat"
+            component={ChatScreen}
+            // Options can be configured per screen, e.g., dynamically set title in ChatScreen
+            options={({ route }) => ({ title: route.params?.otherUserName || 'Chat' })}
+          />
+          {/* Add ChatListScreen to the main stack */}
+          <Stack.Screen
+            name="chatList"
+            component={ChatListScreen}
+            options={{ title: 'Messages' }} // Set title for the list screen
           />
         </Stack.Navigator>
       </NavigationContainer>
