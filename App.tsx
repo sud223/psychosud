@@ -1,7 +1,7 @@
-import React, {useEffect, useRef} from 'react'; // Import useEffect, useRef
-import {Text, View, AppState} from 'react-native'; // Import AppState
-import firebase from '@react-native-firebase/app'; // Import firebase app
-import firestore from '@react-native-firebase/firestore'; // Import firestore instance
+import React, {useEffect, useRef} from 'react';
+import {Text, View, AppState} from 'react-native';
+import firebase from '@react-native-firebase/app';
+import firestore from '@react-native-firebase/firestore';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {NavigationContainer} from '@react-navigation/native';
@@ -17,6 +17,9 @@ import SplashScreen from './src/pages/SplashScreen';
 import NotificationScreen from './src/pages/NotificationScreen';
 import ChatScreen from './src/pages/ChatScreen'; // Import ChatScreen
 import ChatListScreen from './src/pages/ChatListScreen'; // Import ChatListScreen
+import StatsScreen from './src/pages/StatsScreen'; // Import StatsScreen
+// Import Auth Context
+import { AuthProvider, useAuth } from './src/context/AuthContext';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -43,10 +46,9 @@ if (firebase.apps.length === 0) {
   console.log('Firebase already initialized');
 }
 
-
-const App = () => {
-  // Hardcoded user ID for now - replace with actual authenticated user ID
-  const currentUserId = 'currentUserHardcodedId';
+// Define AppContent component to hold the main app logic
+const AppContent = () => {
+  const { userId } = useAuth(); // Get userId from context
   const appState = useRef(AppState.currentState);
 
   // Effect for Firebase initialization confirmation (existing)
@@ -57,6 +59,8 @@ const App = () => {
   // Effect for AppState listener and Firestore status updates
   useEffect(() => {
     const handleAppStateChange = async (nextAppState: string) => {
+      if (!userId) return; // Don't do anything if userId is null
+
       if (
         appState.current.match(/inactive|background/) &&
         nextAppState === 'active'
@@ -64,7 +68,7 @@ const App = () => {
         console.log('App has come to the foreground!');
         // Update Firestore: User is online
         try {
-          await firestore().collection('users').doc(currentUserId).update({
+          await firestore().collection('users').doc(userId).update({ // Use userId from context
             isOnline: true,
             lastSeen: firestore.FieldValue.serverTimestamp(),
           });
@@ -85,7 +89,7 @@ const App = () => {
         console.log('App has gone to the background!');
         // Update Firestore: User is offline
         try {
-          await firestore().collection('users').doc(currentUserId).update({
+          await firestore().collection('users').doc(userId).update({ // Use userId from context
             isOnline: false,
             lastSeen: firestore.FieldValue.serverTimestamp(),
           });
@@ -104,8 +108,9 @@ const App = () => {
 
     // Initial status update when app starts (set to online)
     const setInitialStatus = async () => {
+      if (!userId) return; // Don't do anything if userId is null
       try {
-        await firestore().collection('users').doc(currentUserId).update({
+        await firestore().collection('users').doc(userId).update({ // Use userId from context
           isOnline: true,
           lastSeen: firestore.FieldValue.serverTimestamp(),
         });
@@ -127,7 +132,7 @@ const App = () => {
       // This is tricky because cleanup function might not run reliably on app kill.
       // Firestore's presence system might be better for true offline detection.
     };
-  }, [currentUserId]); // Dependency array includes currentUserId
+  }, [userId]); // Dependency array includes userId
 
 
   const BottomNavigationBar = () => {
@@ -262,7 +267,8 @@ const App = () => {
             },
           }}
         />
-        {/* <Tab.Screen
+        {/* Uncomment Account Tab */}
+        <Tab.Screen
           name="account"
           component={AccountScreen}
           options={{
@@ -285,7 +291,7 @@ const App = () => {
               );
             },
           }}
-        /> */}
+        />
       </Tab.Navigator>
     );
   };
@@ -327,9 +333,25 @@ const App = () => {
             component={ChatListScreen}
             options={{ title: 'Messages' }} // Set title for the list screen
           />
+          {/* Add StatsScreen to the main stack */}
+          <Stack.Screen
+            name="Stats"
+            component={StatsScreen}
+            options={{ title: 'Post Statistics' }} // Set title for the stats screen
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </View>
   );
 };
+
+// New root component that includes the AuthProvider
+const App = () => {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+};
+
 export default App;
